@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
 import { ArrowUpDown, ChevronDown, Download, Filter, PiggyBank, Plus, Search, Upload } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -47,8 +47,14 @@ export default function TransactionsPage() {
           <Link href="/goals" className="text-sm font-medium hover:underline underline-offset-4">
             Goals
           </Link>
-          <Link href="/settings" className="text-sm font-medium hover:underline underline-offset-4">
-            Settings
+          <Link href="/stocks" className="text-sm font-medium hover:underline underline-offset-4">
+            Stocks
+          </Link>
+          <Link href="/chat" className="text-sm font-medium hover:underline underline-offset-4">
+            AI Advisor
+          </Link>
+          <Link href="/profile" className="text-sm font-medium hover:underline underline-offset-4">
+            Profile
           </Link>
         </nav>
       </header>

@@ -53,8 +53,14 @@ export default function GoalsPage() {
           <Link href="/goals" className="text-sm font-medium hover:underline underline-offset-4">
             Goals
           </Link>
-          <Link href="/settings" className="text-sm font-medium hover:underline underline-offset-4">
-            Settings
+          <Link href="/stocks" className="text-sm font-medium hover:underline underline-offset-4">
+            Stocks
+          </Link>
+          <Link href="/chat" className="text-sm font-medium hover:underline underline-offset-4">
+            AI Advisor
+          </Link>
+          <Link href="/profile" className="text-sm font-medium hover:underline underline-offset-4">
+            Profile
           </Link>
         </nav>
       </header>
@@ -88,7 +94,7 @@ export default function GoalsPage() {
                     <Progress value={progress} className="h-2" />
                   </div>
                   <div className="text-sm text-muted-foreground">
-                  Target date: {new Date(goal.deadline).toISOString().split('T')[0]}
+                    Target date: {new Date(goal.deadline).toLocaleDateString()}
                   </div>
                   {progress >= 100 && (
                     <div className="flex items-center text-sm text-green-500 font-medium">

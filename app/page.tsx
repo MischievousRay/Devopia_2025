@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowRight, PiggyBank, TrendingUp, Wallet } from "lucide-react"
+import { ArrowRight, PiggyBank, TrendingUp, Wallet, Bot } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -20,6 +20,15 @@ export default function Home() {
           </Link>
           <Link href="/goals" className="text-sm font-medium hover:underline underline-offset-4">
             Goals
+          </Link>
+          <Link href="/stocks" className="text-sm font-medium hover:underline underline-offset-4">
+            Stocks
+          </Link>
+          <Link href="/chat" className="text-sm font-medium hover:underline underline-offset-4">
+            AI Advisor
+          </Link>
+          <Link href="/login" className="text-sm font-medium hover:underline underline-offset-4">
+            Login
           </Link>
         </nav>
       </header>
@@ -81,22 +90,22 @@ export default function Home() {
               <Card>
                 <CardHeader className="flex flex-row items-center gap-4 pb-2">
                   <TrendingUp className="h-8 w-8 text-primary" />
-                  <CardTitle className="text-xl">Spending Trends</CardTitle>
+                  <CardTitle className="text-xl">Stock Predictions</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
-                    Visualize your spending patterns over time with interactive charts and graphs.
+                    Get AI-powered stock market predictions and insights to make informed investment decisions.
                   </CardDescription>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                  <PiggyBank className="h-8 w-8 text-primary" />
-                  <CardTitle className="text-xl">Savings Pet</CardTitle>
+                  <Bot className="h-8 w-8 text-primary" />
+                  <CardTitle className="text-xl">AI Financial Advisor</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
-                    Meet your savings goals and watch your virtual pet grow and unlock new accessories.
+                    Chat with our AI advisor for personalized financial guidance and recommendations.
                   </CardDescription>
                 </CardContent>
               </Card>
