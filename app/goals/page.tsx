@@ -6,7 +6,7 @@ import { ArrowRight, Edit, PiggyBank, Plus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { VirtualPet } from "@/components/virtual-pet"
+import VirtualPet  from "@/components/virtual-pet"
 
 export default function GoalsPage() {
   const [goals, setGoals] = useState([

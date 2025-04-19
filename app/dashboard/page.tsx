@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TransactionList } from "@/components/transaction-list"
 import { SpendingChart } from "@/components/spending-chart"
-import { VirtualPet } from "@/components/virtual-pet"
+import VirtualPet from "@/components/virtual-pet"
 import { SavingsTips } from "@/components/savings-tips"
 import { mockTransactions, mockCategories } from "@/lib/mock-data"
 
@@ -17,7 +17,7 @@ export default function Dashboard() {
   const [transactions, setTransactions] = useState(mockTransactions)
   const [categories, setCategories] = useState(mockCategories)
   const [savingsGoal, setSavingsGoal] = useState(500)
-  const [currentSavings, setCurrentSavings] = useState(320)
+  const [currentSavings, setCurrentSavings] = useState(20)
   const [savingsProgress, setSavingsProgress] = useState(0)
 
   useEffect(() => {
