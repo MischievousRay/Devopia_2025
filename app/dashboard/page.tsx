@@ -12,23 +12,31 @@ import { SpendingChart } from "@/components/spending-chart"
 import VirtualPet from "@/components/virtual-pet"
 import SavingsTips from "../../components/savings-tips"
 import { mockTransactions, mockCategories } from "@/lib/mock-data"
+import { useTransactionStore } from "@/lib/stores/transaction-store"
 
 export default function Dashboard() {
-  const [transactions, setTransactions] = useState(mockTransactions)
+  const { transactions } = useTransactionStore()
   const [categories, setCategories] = useState(mockCategories)
   const [savingsGoal, setSavingsGoal] = useState(500)
   const [currentSavings, setCurrentSavings] = useState(20)
   const [savingsProgress, setSavingsProgress] = useState(0)
 
   useEffect(() => {
-    // Calculate savings progress percentage
-    setSavingsProgress((currentSavings / savingsGoal) * 100)
-  }, [currentSavings, savingsGoal])
+    setSavingsProgress((currentSavings / savingsGoal) * 100);
+  }, [currentSavings, savingsGoal]);
+  
 
   // Calculate total income and expenses
   const totalIncome = transactions.filter((t) => t.amount > 0).reduce((sum, t) => sum + t.amount, 0)
 
   const totalExpenses = transactions.filter((t) => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0)
+
+  const totalBalance = totalIncome - totalExpenses;
+
+  useEffect(() => {
+    setSavingsProgress((currentSavings / savingsGoal) * 100);
+  }, [currentSavings, savingsGoal]);
+  
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -156,7 +164,7 @@ export default function Dashboard() {
               </Card>
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-              <Card className="col-span-4">
+              {/* <Card className="col-span-4">
                 <CardHeader>
                   <CardTitle>Savings Tips</CardTitle>
                   <CardDescription>AI-powered recommendations based on your spending habits</CardDescription>
@@ -164,7 +172,7 @@ export default function Dashboard() {
                 <CardContent>
                   <SavingsTips />
                 </CardContent>
-              </Card>
+              </Card> */}
               <Card className="col-span-3">
                 <CardHeader>
                   <CardTitle>Top Spending Categories</CardTitle>
