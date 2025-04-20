@@ -38,44 +38,64 @@ export default function ChatPage() {
     scrollToBottom()
   }, [messages])
 
+  const callGroqAPI = async (messageHistory: { role: string; content: string }[]) => {
+    try {
+      const response = await fetch('/api/groq', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: messageHistory,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.message.content;
+    } catch (error) {
+      console.error('Error calling Groq API:', error);
+      return "I'm sorry, I encountered an error while processing your request. Please try again later.";
+    }
+  }
+
   const handleSendMessage = async () => {
-    if (!input.trim()) return
+    if (!input.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       content: input,
       role: "user",
       timestamp: new Date(),
-    }
+    };
 
-    setMessages((prev) => [...prev, userMessage])
-    setInput("")
-    setIsLoading(true)
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setIsLoading(true);
 
-    // In a real app, this would call an AI API
-    // For demo, simulate a response
-    setTimeout(() => {
-      const botResponses = [
-        "Based on your current spending patterns, I recommend reducing your dining out expenses by 15% to meet your savings goal.",
-        "Looking at your investment portfolio, you might want to consider diversifying into more index funds for long-term growth.",
-        "Your emergency fund seems a bit low. I'd suggest allocating an additional $200 per month until you reach 3-6 months of expenses.",
-        "Great question! Based on your income and expenses, you could potentially save an additional $350 per month by optimizing your subscriptions and utility costs.",
-        "I've analyzed your financial situation, and it looks like you're on track to meet your retirement goals. Keep up the good work!",
-      ]
+    // Prepare message history for Groq API
+    const messageHistory = messages.concat(userMessage).map(msg => ({
+      role: msg.role,
+      content: msg.content
+    }));
 
-      const randomResponse = botResponses[Math.floor(Math.random() * botResponses.length)]
+    // Call Groq API
+    const responseContent = await callGroqAPI(messageHistory);
 
-      const botMessage: Message = {
-        id: Date.now().toString(),
-        content: randomResponse,
-        role: "assistant",
-        timestamp: new Date(),
-      }
+    // Add bot response
+    const botMessage: Message = {
+      id: Date.now().toString(),
+      content: responseContent,
+      role: "assistant",
+      timestamp: new Date(),
+    };
 
-      setMessages((prev) => [...prev, botMessage])
-      setIsLoading(false)
-    }, 1500)
-  }
+    setMessages((prev) => [...prev, botMessage]);
+    setIsLoading(false);
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
