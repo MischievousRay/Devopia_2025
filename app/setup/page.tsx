@@ -7,12 +7,15 @@ import { ArrowRight, Upload, PiggyBank } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { useGroqTransactionProcessing } from "@/lib/groq-api";
+import { useTransactionStore } from "@/lib/stores/transaction-store"; // We'll create this next
 
 export default function SetupPage() {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const { processCSV, isProcessing, progress, error } = useGroqTransactionProcessing();
+  const setTransactions = useTransactionStore(state => state.setTransactions);
+  const setAnalysis = useTransactionStore(state => state.setAnalysis);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -20,25 +23,25 @@ export default function SetupPage() {
     }
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file) return;
     
-    setIsUploading(true);
-    
-    // Simulate file upload progress
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 5;
-      setUploadProgress(progress);
+    try {
+      const result = await processCSV(file);
       
-      if (progress >= 100) {
-        clearInterval(interval);
+      if (result) {
+        // Store processed transactions in global state
+        setTransactions(result.transactions);
+        setAnalysis(result.analysis);
+        
+        // Navigate to dashboard after processing completes
         setTimeout(() => {
-          // Navigate to dashboard after processing completes
           router.push('/dashboard');
         }, 500);
       }
-    }, 100);
+    } catch (err) {
+      console.error('Error uploading file:', err);
+    }
   };
 
   return (
@@ -105,15 +108,23 @@ export default function SetupPage() {
                 </div>
               </div>
 
-              {isUploading && (
+              {isProcessing && (
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Processing your transactions</span>
-                    <span>{uploadProgress}%</span>
+                    <span>Processing your transactions with AI</span>
+                    <span>{progress}%</span>
                   </div>
-                  <Progress value={uploadProgress} className="h-2" />
+                  <Progress value={progress} className="h-2" />
                   <p className="text-xs text-gray-500">
-                    We're analyzing your transactions and setting up your dashboard
+                    Our AI is analyzing your transactions and preparing insights
+                  </p>
+                </div>
+              )}
+
+              {error && (
+                <div className="rounded-md bg-red-50 p-4">
+                  <p className="text-sm text-red-800">
+                    Error: {error}
                   </p>
                 </div>
               )}
@@ -121,10 +132,10 @@ export default function SetupPage() {
               <div className="flex justify-end">
                 <Button 
                   onClick={handleUpload} 
-                  disabled={!file || isUploading}
+                  disabled={!file || isProcessing}
                   className="gap-1.5"
                 >
-                  {isUploading ? "Processing..." : "Upload and Continue"}
+                  {isProcessing ? "Processing..." : "Upload and Continue"}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>

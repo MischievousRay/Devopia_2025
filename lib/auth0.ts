@@ -9,7 +9,7 @@ export const auth0 = initAuth0({
   routes: {
     callback: "/api/auth/callback",
     login: "/api/auth/login",
-    logout: "/api/auth/logout",
+    //logout: "/api/auth/logout",
   },
   authorizationParams: {
     scope: "openid profile email",

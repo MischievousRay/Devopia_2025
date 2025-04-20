@@ -1,82 +1,63 @@
-"use client"
+// components/spending-chart.tsx
+"use client";
 
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer 
-} from 'recharts';
+import { useTransactionStore } from "@/lib/stores/transaction-store";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+
+const colors = [
+  "#2563eb", // Blue
+  "#16a34a", // Green
+  "#d97706", // Amber
+  "#dc2626", // Red
+  "#8b5cf6", // Purple
+  "#06b6d4", // Cyan
+  "#db2777", // Pink
+  "#65a30d", // Lime
+  "#f59e0b", // Yellow
+  "#64748b", // Slate
+];
 
 export function SpendingChart() {
-  const data = [
-    {
-      name: "Jan",
-      Groceries: 400,
-      Dining: 240,
-      Entertainment: 180,
-      Utilities: 320,
-      Transportation: 280,
-    },
-    {
-      name: "Feb",
-      Groceries: 380,
-      Dining: 220,
-      Entertainment: 220,
-      Utilities: 310,
-      Transportation: 290,
-    },
-    {
-      name: "Mar",
-      Groceries: 420,
-      Dining: 280,
-      Entertainment: 250,
-      Utilities: 330,
-      Transportation: 270,
-    },
-    {
-      name: "Apr",
-      Groceries: 390,
-      Dining: 290,
-      Entertainment: 210,
-      Utilities: 340,
-      Transportation: 260,
-    },
-    {
-      name: "May",
-      Groceries: 410,
-      Dining: 310,
-      Entertainment: 190,
-      Utilities: 320,
-      Transportation: 250,
-    },
-    {
-      name: "Jun",
-      Groceries: 430,
-      Dining: 270,
-      Entertainment: 230,
-      Utilities: 310,
-      Transportation: 240,
-    },
-  ]
+  const { analysis } = useTransactionStore();
+  const { categoryBreakdown } = analysis;
+
+  const chartData = categoryBreakdown.map((item, index) => ({
+    ...item,
+    color: colors[index % colors.length],
+  }));
 
   return (
-    <ResponsiveContainer width="100%" height={350}>
-      <BarChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey="Groceries" fill="#8884d8" />
-        <Bar dataKey="Dining" fill="#82ca9d" />
-        <Bar dataKey="Entertainment" fill="#ffc658" />
-        <Bar dataKey="Utilities" fill="#ff8042" />
-        <Bar dataKey="Transportation" fill="#0088fe" />
-      </BarChart>
-    </ResponsiveContainer>
-  )
+    <Card className="col-span-2">
+      <CardHeader>
+        <CardTitle>Spending by Category</CardTitle>
+        <CardDescription>Your spending distribution across different categories</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={chartData}
+              margin={{
+                top: 5,
+                right: 30,
+                left: 20,
+                bottom: 5,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="category" />
+              <YAxis />
+              <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+              <Bar dataKey="amount" name="Amount">
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }

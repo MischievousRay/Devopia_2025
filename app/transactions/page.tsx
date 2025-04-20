@@ -16,19 +16,32 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { TransactionList } from "@/components/transaction-list"
-import { mockTransactions } from "@/lib/mock-data"
+import { useTransactionStore } from "@/lib/stores/transaction-store"
 import { ImportTransactionsDialog } from "@/components/import-transactions-dialog"
+import { useGroqTransactionProcessing } from "@/lib/groq-api"
 
 export default function TransactionsPage() {
-  const [transactions, setTransactions] = useState(mockTransactions)
+  const { transactions } = useTransactionStore();
   const [searchQuery, setSearchQuery] = useState("")
   const [showImportDialog, setShowImportDialog] = useState(false)
+  const { processCSV } = useGroqTransactionProcessing();
+  const { setTransactions, setAnalysis } = useTransactionStore();
 
   const filteredTransactions = transactions.filter(
     (transaction) =>
       transaction.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       transaction.category.toLowerCase().includes(searchQuery.toLowerCase()),
   )
+
+  const handleImport = async (file: File) => {
+    const result = await processCSV(file);
+    if (result) {
+      setTransactions([...result.transactions, ...transactions]);
+      // Update the analysis
+      setAnalysis(result.analysis);
+      setShowImportDialog(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -148,10 +161,7 @@ export default function TransactionsPage() {
       <ImportTransactionsDialog
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
-        onImport={(newTransactions) => {
-          setTransactions([...newTransactions, ...transactions])
-          setShowImportDialog(false)
-        }}
+        onImport={handleImport}
       />
     </div>
   )

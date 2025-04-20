@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TransactionList } from "@/components/transaction-list"
 import { SpendingChart } from "@/components/spending-chart"
 import VirtualPet from "@/components/virtual-pet"
-import { SavingsTips } from "@/components/savings-tips"
+import SavingsTips from "../../components/savings-tips"
 import { mockTransactions, mockCategories } from "@/lib/mock-data"
 
 export default function Dashboard() {

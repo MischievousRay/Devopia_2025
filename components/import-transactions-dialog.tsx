@@ -1,122 +1,95 @@
-"use client"
-
-import type React from "react"
-
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Textarea } from "@/components/ui/textarea"
-import { v4 as uuidv4 } from "uuid"
+// components/import-transactions-dialog.tsx
+import { useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Upload } from "lucide-react";
+import { useGroqTransactionProcessing } from "@/lib/groq-api";
 
 interface ImportTransactionsDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onImport: (transactions: any[]) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onImport: (file: File) => void;
 }
 
 export function ImportTransactionsDialog({ open, onOpenChange, onImport }: ImportTransactionsDialogProps) {
-  const [file, setFile] = useState<File | null>(null)
-  const [csvData, setCsvData] = useState("")
+  const [file, setFile] = useState<File | null>(null);
+  const { isProcessing, progress, error } = useGroqTransactionProcessing();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0])
+      setFile(e.target.files[0]);
     }
-  }
+  };
 
-  const handleImport = () => {
-    // In a real app, we would parse the CSV/file data
-    // For demo purposes, we'll create some mock transactions
-    const mockImportedTransactions = [
-      {
-        id: uuidv4(),
-        date: new Date().toISOString(),
-        description: "Imported Transaction 1",
-        amount: -45.99,
-        category: "Groceries",
-      },
-      {
-        id: uuidv4(),
-        date: new Date().toISOString(),
-        description: "Imported Transaction 2",
-        amount: -32.5,
-        category: "Dining",
-      },
-      {
-        id: uuidv4(),
-        date: new Date().toISOString(),
-        description: "Imported Transaction 3",
-        amount: 1200.0,
-        category: "Income",
-      },
-    ]
+  const handleImport = async () => {
+    if (!file) return;
+    onImport(file);
+  };
 
-    onImport(mockImportedTransactions)
-  }
+  const handleClose = () => {
+    setFile(null);
+    onOpenChange(false);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[525px]">
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Import Transactions</DialogTitle>
-          <DialogDescription>Import your transactions from a CSV file or paste data directly.</DialogDescription>
+          <DialogDescription>
+            Upload a CSV file with your financial transactions to import into MyBudgetAI
+          </DialogDescription>
         </DialogHeader>
-        <Tabs defaultValue="file" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="file">Upload File</TabsTrigger>
-            <TabsTrigger value="paste">Paste Data</TabsTrigger>
-          </TabsList>
-          <TabsContent value="file" className="space-y-4 py-4">
-            <div className="grid w-full gap-1.5">
-              <Label htmlFor="file">CSV File</Label>
-              <Input id="file" type="file" accept=".csv" onChange={handleFileChange} />
-              <p className="text-sm text-muted-foreground mt-1">
-                Upload a CSV file from your bank or financial institution.
+        <div className="space-y-4 py-4">
+          <div 
+            className="border-2 border-dashed rounded-md p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
+            onClick={() => document.getElementById('import-csv-file')?.click()}
+          >
+            <Upload className="h-8 w-8 text-gray-400 mb-2" />
+            <p className="text-sm font-medium">
+              {file ? file.name : "Click to select a CSV file"}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Supports CSV files from most major banks
+            </p>
+            <input 
+              id="import-csv-file" 
+              type="file" 
+              accept=".csv" 
+              className="hidden" 
+              onChange={handleFileChange}
+            />
+          </div>
+
+          {isProcessing && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Processing with AI</span>
+                <span>{progress}%</span>
+              </div>
+              <Progress value={progress} className="h-2" />
+            </div>
+          )}
+
+          {error && (
+            <div className="rounded-md bg-red-50 p-4">
+              <p className="text-sm text-red-800">
+                Error: {error}
               </p>
             </div>
-            <div className="grid w-full gap-1.5">
-              <Label>Supported Banks</Label>
-              <div className="flex flex-wrap gap-2">
-                <div className="rounded-md bg-muted px-2 py-1 text-xs">Chase</div>
-                <div className="rounded-md bg-muted px-2 py-1 text-xs">Bank of America</div>
-                <div className="rounded-md bg-muted px-2 py-1 text-xs">Wells Fargo</div>
-                <div className="rounded-md bg-muted px-2 py-1 text-xs">Citi</div>
-                <div className="rounded-md bg-muted px-2 py-1 text-xs">Capital One</div>
-                <div className="rounded-md bg-muted px-2 py-1 text-xs">+ More</div>
-              </div>
-            </div>
-          </TabsContent>
-          <TabsContent value="paste" className="space-y-4 py-4">
-            <div className="grid w-full gap-1.5">
-              <Label htmlFor="csv">CSV Data</Label>
-              <Textarea
-                id="csv"
-                placeholder="Paste your CSV data here..."
-                className="min-h-[200px]"
-                value={csvData}
-                onChange={(e) => setCsvData(e.target.value)}
-              />
-              <p className="text-sm text-muted-foreground mt-1">Format: Date,Description,Amount,Category</p>
-            </div>
-          </TabsContent>
-        </Tabs>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleImport}>Import Transactions</Button>
-        </DialogFooter>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button onClick={handleImport} disabled={!file || isProcessing}>
+              {isProcessing ? "Processing..." : "Import"}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
