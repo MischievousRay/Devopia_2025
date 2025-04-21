@@ -1,20 +1,37 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ArrowRight, Edit, PiggyBank, Plus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import VirtualPet  from "@/components/virtual-pet"
+import VirtualPet from "@/components/virtual-pet"
+import { useTransactionStore } from "@/lib/stores/transaction-store"
 
 export default function GoalsPage() {
+  const { transactions } = useTransactionStore()
+  const [totalSavings, setTotalSavings] = useState(0)
+  const [overallProgress, setOverallProgress] = useState(0)
+  
+  // Calculate total income and expenses from transactions
+  const totalIncome = transactions?.filter((t) => t.type === 'income').reduce((sum, t) => sum + t.amount, 0) || 0
+  const totalExpenses = transactions?.filter((t) => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0) || 0
+  const totalBalance = totalIncome - totalExpenses
+
+  // Calculate current savings as 15% of total balance (from dashboard logic)
+  useEffect(() => {
+    const calculatedSavings = totalBalance * 0.15
+    setTotalSavings(parseFloat(Math.max(0, calculatedSavings).toFixed(2)))
+  }, [totalBalance])
+
   const [goals, setGoals] = useState([
     {
       id: 1,
       name: "Emergency Fund",
       target: 5000,
-      current: 2500,
+      current: 0,
+      allocation: 50, // 50% of total savings
       deadline: "2025-12-31",
       description: "Build a 3-month emergency fund for unexpected expenses",
     },
@@ -22,7 +39,8 @@ export default function GoalsPage() {
       id: 2,
       name: "New Laptop",
       target: 1200,
-      current: 800,
+      current: 0,
+      allocation: 30, // 30% of total savings
       deadline: "2025-06-30",
       description: "Save for a new development laptop",
     },
@@ -30,11 +48,33 @@ export default function GoalsPage() {
       id: 3,
       name: "Vacation",
       target: 3000,
-      current: 1200,
+      current: 0,
+      allocation: 20, // 20% of total savings
       deadline: "2025-08-15",
       description: "Summer vacation fund",
     },
   ])
+
+  // Distribute savings among goals based on allocation percentages
+  useEffect(() => {
+    if (totalSavings > 0) {
+      const updatedGoals = goals.map(goal => {
+        const allocated = (totalSavings * goal.allocation) / 100
+        return {
+          ...goal,
+          current: parseFloat(allocated.toFixed(2))
+        }
+      })
+      
+      setGoals(updatedGoals)
+      
+      // Calculate overall progress across all goals
+      const totalTarget = updatedGoals.reduce((sum, goal) => sum + goal.target, 0)
+      const totalCurrent = updatedGoals.reduce((sum, goal) => sum + goal.current, 0)
+      const calculatedProgress = (totalCurrent / totalTarget) * 100
+      setOverallProgress(Math.min(100, calculatedProgress))
+    }
+  }, [totalSavings])
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -67,10 +107,15 @@ export default function GoalsPage() {
       <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-bold tracking-tight">Savings Goals</h2>
-          <Button size="sm" className="h-9 gap-1">
-            <Plus className="h-4 w-4" />
-            <span>New Goal</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm">
+              Total Savings: ${totalSavings}
+            </Button>
+            <Button size="sm" className="h-9 gap-1">
+              <Plus className="h-4 w-4" />
+              <span>New Goal</span>
+            </Button>
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -93,8 +138,13 @@ export default function GoalsPage() {
                     </div>
                     <Progress value={progress} className="h-2" />
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    Target date: {new Date(goal.deadline).toLocaleDateString()}
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      Target date: {new Date(goal.deadline).toLocaleDateString()}
+                    </span>
+                    <span className="font-medium">
+                      {goal.allocation}% allocation
+                    </span>
                   </div>
                   {progress >= 100 && (
                     <div className="flex items-center text-sm text-green-500 font-medium">
@@ -137,12 +187,24 @@ export default function GoalsPage() {
             <CardDescription>Meet your virtual pet that grows as you achieve your savings goals</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center">
-            <VirtualPet savingsProgress={75} />
+            <VirtualPet savingsProgress={overallProgress} />
             <div className="mt-6 text-center">
-              <h3 className="text-lg font-medium">Level 3 Savings Buddy</h3>
+              <h3 className="text-lg font-medium">
+                {overallProgress < 25 ? "Level 1 Savings Buddy" : 
+                 overallProgress < 50 ? "Level 2 Savings Buddy" :
+                 overallProgress < 75 ? "Level 3 Savings Buddy" : "Level 4 Savings Master"}
+              </h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Your pet has grown with your savings habits! Complete more goals to unlock special accessories.
+                Your pet grows with your overall savings progress ({overallProgress.toFixed(0)}%).
+                Complete more goals to unlock special accessories.
               </p>
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium">Overall Progress</span>
+                  <span className="text-sm font-medium">{overallProgress.toFixed(0)}%</span>
+                </div>
+                <Progress value={overallProgress} className="h-2" />
+              </div>
               <div className="flex justify-center gap-4 mt-4">
                 <Button variant="outline">View Accessories</Button>
                 <Button>
